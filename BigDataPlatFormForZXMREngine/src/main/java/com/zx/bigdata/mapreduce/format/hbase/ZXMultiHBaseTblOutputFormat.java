@@ -15,21 +15,19 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import com.zx.bigdata.mapreduce.bean.ZXDBObjectKey;
 
 public class ZXMultiHBaseTblOutputFormat extends OutputFormat<ZXDBObjectKey, Writable> {
-	
+
 	public static final String WAL_PROPERTY = MultiTableOutputFormat.WAL_PROPERTY;
 	public static final boolean WAL_ON = MultiTableOutputFormat.WAL_ON;
 	public static final boolean WAL_OFF = MultiTableOutputFormat.WAL_OFF;
-	
+
 	@Override
-	public void checkOutputSpecs(JobContext arg0) throws IOException,
-			InterruptedException {
-		
+	public void checkOutputSpecs(JobContext arg0) throws IOException, InterruptedException {
+
 	}
 
 	@Override
-	public OutputCommitter getOutputCommitter(TaskAttemptContext context)
-			throws IOException, InterruptedException {
-		
+	public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
+
 		return new TableOutputCommitter();
 	}
 
@@ -37,7 +35,7 @@ public class ZXMultiHBaseTblOutputFormat extends OutputFormat<ZXDBObjectKey, Wri
 	public RecordWriter<ZXDBObjectKey, Writable> getRecordWriter(TaskAttemptContext context)
 			throws IOException, InterruptedException {
 		Configuration conf = context.getConfiguration();
-		return new ZXHBaseTblRecordWriter(conf, conf.getBoolean(WAL_PROPERTY,WAL_ON));
+		return new ZXHBaseTblRecordWriter(conf, conf.getBoolean(WAL_PROPERTY, WAL_OFF));
 	}
 
 }
