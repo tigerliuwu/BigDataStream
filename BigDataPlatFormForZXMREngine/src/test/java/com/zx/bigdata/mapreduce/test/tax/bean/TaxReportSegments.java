@@ -24,8 +24,11 @@ public class TaxReportSegments {
 
 	private static void init() {
 		segments = new HashMap<String, Segment>();
-		segments.put(Segment.CONST_HEADER_KEY, initHeaderSegment());
-		segments.put(Segment.CONST_BASIC_KEY, initBasicSegment());
+		initHeaderSegment();
+		initBasicSegment();
+		initDetailedTaxSegment();
+		initPunishSegment();
+		initCommendSegment();
 	}
 
 	public static Segment getSegment(String segName) {
@@ -37,10 +40,11 @@ public class TaxReportSegments {
 		return segments;
 	}
 
-	private static Segment initHeaderSegment() {
+	private static void initHeaderSegment() {
 		Segment segment = new Segment();
 		segment.setName(Segment.CONST_HEADER_KEY);
 		segment.setOccurrencyRate(OccurrencyRateEnum.M_ONCE);
+		segments.put(Segment.CONST_HEADER_KEY, segment);
 
 		// *** head items** start **
 		// 数据格式版本
@@ -127,16 +131,15 @@ public class TaxReportSegments {
 		segment.getDataItems().add(item);
 		// *** head items ** end ***
 
-		return segment;
-
 	}
 
-	private static Segment initBasicSegment() {
+	private static void initBasicSegment() {
 		Segment segment = null;
 
 		segment = new Segment();
 		segment.setName(Segment.CONST_BASIC_KEY);
 		segment.setOccurrencyRate(OccurrencyRateEnum.M_ONCE);
+		segments.put(Segment.CONST_BASIC_KEY, segment);
 
 		// 账户记录长度
 		DataItem item = new DataItem();
@@ -339,19 +342,21 @@ public class TaxReportSegments {
 		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
 		segment.getDataItems().add(item);
 
-		return segment;
 	}
 
-	public static void initDetailedTaxSegment() {
+	/**
+	 * 分税种明细信息段(67)
+	 */
+	private static void initDetailedTaxSegment() {
 		Segment segment = segments.get("B");
 		if (segment != null) {
 			return;
 		}
 
 		segment = new Segment();
-		segments.put("B", segment);
 		segment.setName("B");
 		segment.setOccurrencyRate(OccurrencyRateEnum.O_MULTIPLE);
+		segments.put("B", segment);
 
 		// 信息类别
 		DataItem item = new DataItem();
@@ -399,6 +404,212 @@ public class TaxReportSegments {
 		item.setDataItemType(DataItemTypeEnum.AN);
 		item.setStartPose(38);
 		item.setEndPose(67);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		return;
+	}
+
+	/**
+	 * 处罚信息段(395)
+	 */
+	private static void initPunishSegment() {
+		Segment segment = segments.get("C");
+		if (segment != null) {
+			return;
+		}
+
+		segment = new Segment();
+		segment.setName("C");
+		segment.setOccurrencyRate(OccurrencyRateEnum.O_MULTIPLE);
+		segments.put("C", segment);
+
+		// 信息类别
+		DataItem item = new DataItem();
+		item.setName("reportInformationType");
+		item.setDataItemType(DataItemTypeEnum.AN);
+		item.setStartPose(1);
+		item.setEndPose(1);
+		segment.getDataItems().add(item);
+
+		// 处罚决定文书号
+		item = new DataItem();
+		item.setName("taxType");
+		item.setDataItemType(DataItemTypeEnum.AN);
+		item.setStartPose(2);
+		item.setEndPose(17);
+		segment.getDataItems().add(item);
+
+		// 处罚税务机关名称
+		item = new DataItem();
+		item.setName("taxOrgName");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(18);
+		item.setEndPose(67);
+		segment.getDataItems().add(item);
+
+		// 处罚税务机关代码
+		item = new DataItem();
+		item.setName("taxOrgCode");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(68);
+		item.setEndPose(81);
+		segment.getDataItems().add(item);
+
+		// 处罚原因
+		item = new DataItem();
+		item.setName("punishReason");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(82);
+		item.setEndPose(141);
+		segment.getDataItems().add(item);
+
+		// 处罚生效日期
+		item = new DataItem();
+		item.setName("punishEffectiveDate");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(142);
+		item.setEndPose(149);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 处罚内容
+		item = new DataItem();
+		item.setName("punishCause");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(150);
+		item.setEndPose(249);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 税务处罚金额
+		item = new DataItem();
+		item.setName("punishAmount");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(250);
+		item.setEndPose(264);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 是否行政复议
+		item = new DataItem();
+		item.setName("adminReexamStatus");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(265);
+		item.setEndPose(265);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 行政复议结果
+		item = new DataItem();
+		item.setName("adminReexamResult");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(266);
+		item.setEndPose(365);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 保留字段
+		item = new DataItem();
+		item.setName("obligate");
+		item.setDataItemType(DataItemTypeEnum.AN);
+		item.setStartPose(366);
+		item.setEndPose(395);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		return;
+	}
+
+	/**
+	 * 表彰（奖励）信息段(399)
+	 */
+	private static void initCommendSegment() {
+		Segment segment = segments.get("D");
+		if (segment != null) {
+			return;
+		}
+
+		segment = new Segment();
+		segment.setName("D");
+		segment.setOccurrencyRate(OccurrencyRateEnum.O_MULTIPLE);
+		segments.put("D", segment);
+
+		// 信息类别
+		DataItem item = new DataItem();
+		item.setName("reportInformationType");
+		item.setDataItemType(DataItemTypeEnum.AN);
+		item.setStartPose(1);
+		item.setEndPose(1);
+		segment.getDataItems().add(item);
+
+		// 荣誉称号
+		item = new DataItem();
+		item.setName("honorTitle");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(2);
+		item.setEndPose(101);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 颁发单位
+		item = new DataItem();
+		item.setName("issuingOrg");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(102);
+		item.setEndPose(201);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 决定文书号
+		item = new DataItem();
+		item.setName("decisionNO");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(202);
+		item.setEndPose(251);
+		segment.getDataItems().add(item);
+
+		// 授予日期
+		item = new DataItem();
+		item.setName("awardDate");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(252);
+		item.setEndPose(259);
+		segment.getDataItems().add(item);
+
+		// 有效期限
+		item = new DataItem();
+		item.setName("expireDate");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(260);
+		item.setEndPose(261);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 撤销日期
+		item = new DataItem();
+		item.setName("abrogationDate");
+		item.setDataItemType(DataItemTypeEnum.N);
+		item.setStartPose(262);
+		item.setEndPose(269);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 撤销原因
+		item = new DataItem();
+		item.setName("abrogationCause");
+		item.setDataItemType(DataItemTypeEnum.ANC);
+		item.setStartPose(270);
+		item.setEndPose(369);
+		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
+		segment.getDataItems().add(item);
+
+		// 保留字段
+		item = new DataItem();
+		item.setName("obligate");
+		item.setDataItemType(DataItemTypeEnum.AN);
+		item.setStartPose(370);
+		item.setEndPose(399);
 		item.getRules().add(new Rule(RuleMethodEnum.IS_NULLABLE.getMethodName()));
 		segment.getDataItems().add(item);
 

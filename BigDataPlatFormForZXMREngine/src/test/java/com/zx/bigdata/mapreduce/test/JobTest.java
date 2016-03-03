@@ -23,7 +23,7 @@ public class JobTest {
 
 	@Before
 	public void setup() throws Exception {
-		utility = HBaseClusterCache.getMiniCluster();
+		utility = HBaseClusterCache.getHBaseUtility();
 	}
 
 	@Test

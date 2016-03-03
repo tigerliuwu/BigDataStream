@@ -17,31 +17,35 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.zx.bigdata.bean.datadef.ReportTypeEnum;
 import com.zx.bigdata.mapreduce.bean.ZXDBObjectKey;
-import com.zx.bigdata.mapreduce.format.file.ZXDBObjectRecordOutputFormat;
+import com.zx.bigdata.mapreduce.format.hbase.ZXMultiHBaseTblOutputFormat;
 import com.zx.bigdata.mapreduce.mapper.MRMapper;
+import com.zx.bigdata.mapreduce.test.model.HBaseClusterCache;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataProcess;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataSchema;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxReportSegments;
 import com.zx.bigdata.utils.MRCounterUtil;
 
-public class TaxBasicSegmentTest {
+public class TaxBasicSegmentTest_minicluster {
+
 	ObjectMapper mapper;
 	Configuration conf;
 	TaxDataSchema dataSchema;
 	TaxDataProcess dataProcess;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		mapper = new ObjectMapper();
 		conf = new Configuration();
 		dataSchema = new TaxDataSchema(ReportTypeEnum.NORMAL);
 		dataSchema.setSegments(TaxReportSegments.getSegments());
 		dataProcess = new TaxDataProcess(dataSchema.getDataSchema());
+		HBaseClusterCache.startupMinicluster();
 	}
 
 	/**
@@ -71,7 +75,7 @@ public class TaxBasicSegmentTest {
 		job.setOutputValueClass(Writable.class);
 
 		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(ZXDBObjectRecordOutputFormat.class);
+		job.setOutputFormatClass(ZXMultiHBaseTblOutputFormat.class);
 
 		FileInputFormat.addInputPath(job, new Path(input));
 		FileOutputFormat.setOutputPath(job, new Path(output));
@@ -84,6 +88,11 @@ public class TaxBasicSegmentTest {
 		System.out.println("there you see");
 		assertTrue(job.isSuccessful());
 
+	}
+
+	@After
+	public void shutdown() {
+		HBaseClusterCache.shutdownMinicluster();
 	}
 
 }

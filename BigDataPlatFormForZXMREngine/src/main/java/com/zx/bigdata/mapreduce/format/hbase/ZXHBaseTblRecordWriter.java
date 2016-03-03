@@ -27,19 +27,20 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
 import com.zx.bigdata.mapreduce.bean.ZXDBObjectKey;
-import com.zx.bigdata.mapreduce.mapper.MRMapper;
 import com.zx.bigdata.mapreduce.test.model.HBaseClusterCache;
 import com.zx.bigdata.utils.MRUtils;
 
 public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable> {
-	private static final Logger LOG = Logger.getLogger(MRMapper.class);
+	private static final Logger LOG = Logger.getLogger(ZXHBaseTblRecordWriter.class);
 
-	private static byte[] TABLE_FAMILY = null;
+	public static byte[] TABLE_FAMILY = null;
 	// private static byte[] TABLE_COLUMN = null;
-	private static byte[] TABLE_STATUS = null;
-	private static byte[] DELETE_STATUS = null;
-	private static byte[] TABLE_REPORT = null;// 报文数据保存表
-	private static byte[] TABLE_SND_KEY = null;// 二级索引数据保存表
+	public static byte[] TABLE_STATUS = null;
+	public static byte[] DELETE_STATUS = null;
+	public static byte[] TABLE_REPORT = null;// 报文数据保存表
+	public static byte[] TABLE_SND_KEY = null;// 二级索引数据保存表
+	public static byte[] SND_VAL_COL = null; // 二级索引数据保存列
+	public static final byte[] EMPTY_BYTE_ARR = new byte[0];
 
 	static {
 		TABLE_REPORT = Bytes.toBytes(MRUtils.HBASE_PROCESS_DATA);
@@ -47,6 +48,8 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 		TABLE_FAMILY = Bytes.toBytes(MRUtils.HBASE_TABLE_FAMILY);
 		TABLE_STATUS = Bytes.toBytes(MRUtils.HBASE_RECORD_STATUS_COL);
 		DELETE_STATUS = Bytes.toBytes(MRUtils.CONSTANT_DELETE_STATUS);
+		SND_VAL_COL = Bytes.toBytes("v");
+
 	}
 
 	private Connection conn;
@@ -76,7 +79,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 	BufferedMutator getBufferedMutator(byte[] tableName) throws Exception {
 		BufferedMutator result = null;
 		if (this.conn == null) {
-			conn = HBaseClusterCache.getMiniCluster().getConnection(); // ConnectionFactory.createConnection(conf);
+			conn = HBaseClusterCache.getHBaseUtility().getConnection(); // ConnectionFactory.createConnection(conf);
 			LOG.debug("create a hbase connection.");
 		}
 		if (!this.mutatorMap.containsKey(tableName)) {
@@ -120,6 +123,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 				}
 			}
 			put = new Put(Bytes.toBytes(key.key));
+			put.addColumn(TABLE_FAMILY, SND_VAL_COL, EMPTY_BYTE_ARR);
 			put.setDurability(this.useWriteAheadLog ? Durability.SYNC_WAL : Durability.SKIP_WAL);
 			this.sndKeyMutator.mutate(put);
 			LOG.info("二级索引写入：(key:" + Bytes.toString(put.getRow()) + ")");
@@ -211,7 +215,8 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 			}
 		}
 		this.reportMutator.mutate(put);
-
+		LOG.info("正常报文入库：" + reportMutator.getName().getNameAsString() + "\t" + Bytes.toString(put.getRow()) + "\t"
+				+ put.toJSON());
 	}
 
 }

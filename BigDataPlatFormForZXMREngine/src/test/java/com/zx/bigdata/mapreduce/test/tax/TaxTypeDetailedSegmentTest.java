@@ -29,7 +29,7 @@ import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataSchema;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxReportSegments;
 import com.zx.bigdata.utils.MRCounterUtil;
 
-public class TaxBasicSegmentTest {
+public class TaxTypeDetailedSegmentTest {
 	ObjectMapper mapper;
 	Configuration conf;
 	TaxDataSchema dataSchema;
@@ -45,16 +45,18 @@ public class TaxBasicSegmentTest {
 	}
 
 	/**
-	 * 源文件中只有基本信息段
+	 * 源文件中只有基本信息段 + 分税种明细信息段
+	 * <p>
+	 * 分税种明细信息段没有对应的ColumnObject
 	 * 
 	 * @throws Exception
 	 */
 	@Test
-	public void testOnlyBasicSegment() throws Exception {
+	public void testDetailedTaxSegments1() throws Exception {
 
 		// init the path
-		final String input = "testData/tax/onlybasic";
-		final String output = "tmp/basicSeg";
+		final String input = "testData/tax/onlytaxtype";
+		final String output = "tmp/taxType/tax1";
 		FileUtil.fullyDelete(new File(output));
 
 		conf.clear();
@@ -64,8 +66,53 @@ public class TaxBasicSegmentTest {
 		json = mapper.writeValueAsString(dataProcess.getDataProcess());
 		conf.set("org.zx.bigdata.dataprocess", json);
 
-		Job job = Job.getInstance(conf, "word count"); // new Job(conf,
-														// "wordcount");
+		Job job = Job.getInstance(conf, "taxDetailed1"); // new Job(conf,
+															// "wordcount");
+		job.setNumReduceTasks(0);
+		job.setOutputKeyClass(ZXDBObjectKey.class);
+		job.setOutputValueClass(Writable.class);
+
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(ZXDBObjectRecordOutputFormat.class);
+
+		FileInputFormat.addInputPath(job, new Path(input));
+		FileOutputFormat.setOutputPath(job, new Path(output));
+
+		MultipleOutputs.addNamedOutput(job, "feedback", TextOutputFormat.class, NullWritable.class, Text.class);
+
+		job.setMapperClass(MRMapper.class);
+		job.waitForCompletion(true);
+		assertTrue(MRCounterUtil.validCounterNum(job.getCounters(), dataProcess.getDataProcess()));
+		System.out.println("there you see");
+		assertTrue(job.isSuccessful());
+
+	}
+
+	/**
+	 * 源文件中只有基本信息段 + 分税种明细信息段
+	 * <p>
+	 * 分税种明细信息段有对应的ColumnObject
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testDetailedTaxSegments2() throws Exception {
+
+		// init the path
+		final String input = "testData/tax/onlytaxtype";
+		final String output = "tmp/taxType/tax2";
+		FileUtil.fullyDelete(new File(output));
+
+		conf.clear();
+		String json = mapper.writeValueAsString(dataSchema.getDataSchema());
+		conf.set("org.zx.bigdata.dataschema", json);
+		dataProcess.addHDFSPath(input);
+		dataProcess.initDetailedTaxDBSchema();
+		json = mapper.writeValueAsString(dataProcess.getDataProcess());
+		conf.set("org.zx.bigdata.dataprocess", json);
+
+		Job job = Job.getInstance(conf, "taxDetailed2"); // new Job(conf,
+															// "wordcount");
 		job.setNumReduceTasks(0);
 		job.setOutputKeyClass(ZXDBObjectKey.class);
 		job.setOutputValueClass(Writable.class);

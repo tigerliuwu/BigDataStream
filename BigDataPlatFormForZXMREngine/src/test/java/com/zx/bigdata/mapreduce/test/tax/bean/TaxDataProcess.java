@@ -1,6 +1,8 @@
 package com.zx.bigdata.mapreduce.test.tax.bean;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.zx.bigdata.bean.datadef.DataItem;
 import com.zx.bigdata.bean.datadef.DataSchema;
@@ -15,6 +17,7 @@ import com.zx.bigdata.bean.processdef.SegmentDataItemPair;
 public class TaxDataProcess {
 
 	private DataProcess dataProcess;
+	private Map<String, Boolean> segMap = new HashMap<String, Boolean>();
 
 	private void init() {
 		this.dataProcess = new DataProcess();
@@ -34,16 +37,95 @@ public class TaxDataProcess {
 	}
 
 	public void addHDFSPath(String path) {
+		if (this.dataProcess.getHdfsPaths().contains(path)) {
+			return;
+		}
 		this.dataProcess.getHdfsPaths().add(path);
 	}
 
+	/**
+	 * 分税种明细信息段
+	 */
 	public void initDetailedTaxDBSchema() {
 		String segName = "B";
+		if (this.segMap.get(segName) != null) {
+			return;
+		}
+		this.segMap.put(segName, true);
+
 		ColumnObject colObj = new ColumnObject();
-		this.dataProcess.getDbSchemas().get(0).getColumnObjects().add(colObj);
+		List<ColumnObject> colObjs = this.dataProcess.getDbSchemas().get(0).getColumnObjects();
+
+		colObjs.add(colObj);
 		colObj.setName("taxDetailedType");
 		colObj.setSegName(segName);
 
+		// 来自于报文头的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
+
+		// 来自于基本信息段的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxOrgCode"));
+
+		// 来自于当前信息段的数据段
+		for (DataItem item : TaxReportSegments.getSegment(segName).getDataItems()) {
+			colObj.getDataItems().add(new SegmentDataItemPair(segName, item.getName()));
+		}
+
+	}
+
+	/**
+	 * 惩罚信息段
+	 */
+	public void initPunishDBSchema() {
+		String segName = "C";
+		if (this.segMap.get(segName) != null) {
+			return;
+		}
+		this.segMap.put(segName, true);
+
+		ColumnObject colObj = new ColumnObject();
+		List<ColumnObject> colObjs = this.dataProcess.getDbSchemas().get(0).getColumnObjects();
+
+		colObjs.add(colObj);
+		colObj.setName("taxPunish");
+		colObj.setSegName(segName);
+
+		// 来自于报文头的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
+
+		// 来自于基本信息段的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxOrgCode"));
+
+		// 来自于当前信息段的数据段
+		for (DataItem item : TaxReportSegments.getSegment(segName).getDataItems()) {
+			colObj.getDataItems().add(new SegmentDataItemPair(segName, item.getName()));
+		}
+	}
+
+	/**
+	 * 奖励信息段
+	 */
+	public void initCommendDBSchema() {
+		String segName = "D";
+		if (this.segMap.get(segName) != null) {
+			return;
+		}
+		this.segMap.put(segName, true);
+
+		ColumnObject colObj = new ColumnObject();
+		List<ColumnObject> colObjs = this.dataProcess.getDbSchemas().get(0).getColumnObjects();
+
+		colObjs.add(colObj);
+		colObj.setName("taxCommend");
+		colObj.setSegName(segName);
+
+		// 来自于报文头的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
+
+		// 来自于基本信息段的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxOrgCode"));
+
+		// 来自于当前信息段的数据段
 		for (DataItem item : TaxReportSegments.getSegment(segName).getDataItems()) {
 			colObj.getDataItems().add(new SegmentDataItemPair(segName, item.getName()));
 		}
@@ -84,6 +166,10 @@ public class TaxDataProcess {
 		colObj.setName("basicSeg");
 		colObj.setSegName(Segment.CONST_BASIC_KEY);
 
+		// 来自于报文头的数据段
+		colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
+
+		// 来自于基本信息段的数据段
 		for (DataItem item : TaxReportSegments.getSegment(Segment.CONST_BASIC_KEY).getDataItems()) {
 			colObj.getDataItems().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, item.getName()));
 		}
