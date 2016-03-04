@@ -52,11 +52,13 @@ public class HBaseClusterCache {
 	public static void startupMinicluster() throws Exception {
 		utility.startMiniCluster();
 		initCreateTable();
+		// utility.startMiniMapReduceCluster();
 	}
 
 	public static void shutdownMinicluster() {
 		try {
 			if (utility != null) {
+				// utility.shutdownMiniMapReduceCluster();
 				utility.shutdownMiniCluster();
 			}
 		} catch (Exception e) {

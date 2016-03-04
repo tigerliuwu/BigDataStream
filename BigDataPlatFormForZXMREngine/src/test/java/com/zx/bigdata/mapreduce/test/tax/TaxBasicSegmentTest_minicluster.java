@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -29,8 +30,14 @@ import com.zx.bigdata.mapreduce.test.model.HBaseClusterCache;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataProcess;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataSchema;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxReportSegments;
-import com.zx.bigdata.utils.MRCounterUtil;
+import com.zx.bigdata.mapreduce.test.util.MRCounterUtil;
 
+/**
+ * 在本地启动了DFS，zookeeper以及mapreduce clusters
+ * 
+ * @author liuwu
+ *
+ */
 public class TaxBasicSegmentTest_minicluster {
 
 	ObjectMapper mapper;
@@ -41,11 +48,11 @@ public class TaxBasicSegmentTest_minicluster {
 	@Before
 	public void setup() throws Exception {
 		mapper = new ObjectMapper();
-		conf = new Configuration();
 		dataSchema = new TaxDataSchema(ReportTypeEnum.NORMAL);
 		dataSchema.setSegments(TaxReportSegments.getSegments());
 		dataProcess = new TaxDataProcess(dataSchema.getDataSchema());
 		HBaseClusterCache.startupMinicluster();
+		conf = HBaseClusterCache.getHBaseUtility().getConfiguration();
 	}
 
 	/**
@@ -57,14 +64,23 @@ public class TaxBasicSegmentTest_minicluster {
 	public void testOnlyBasicSegment() throws Exception {
 
 		// init the path
-		final String input = "testData/tax/onlybasic";
-		final String output = "tmp/basicSeg";
+		final String input = "testData/tax/onlybasic/tax_with_only_basic";
+		final String output = "/tmp/tax/basicSeg";
 		FileUtil.fullyDelete(new File(output));
 
-		conf.clear();
+		FileSystem fs = FileSystem.get(conf);
+		Path p = new Path("/user/tax/basic/");
+		fs.mkdirs(p);
+		fs.copyFromLocalFile(new Path(input), p);
+
+		if (!fs.exists(new Path("/user/tax/basic/tax_with_only_basic"))) {
+			System.err.println("=========failed to upload the local file===========");
+			return;
+		}
+
+		// conf.clear();
 		String json = mapper.writeValueAsString(dataSchema.getDataSchema());
 		conf.set("org.zx.bigdata.dataschema", json);
-		dataProcess.addHDFSPath(input);
 		json = mapper.writeValueAsString(dataProcess.getDataProcess());
 		conf.set("org.zx.bigdata.dataprocess", json);
 
@@ -76,17 +92,22 @@ public class TaxBasicSegmentTest_minicluster {
 
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(ZXMultiHBaseTblOutputFormat.class);
+		// job.setOutputFormatClass(ZXDBObjectRecordOutputFormat.class);
 
-		FileInputFormat.addInputPath(job, new Path(input));
+		FileInputFormat.addInputPath(job, p);
 		FileOutputFormat.setOutputPath(job, new Path(output));
 
 		MultipleOutputs.addNamedOutput(job, "feedback", TextOutputFormat.class, NullWritable.class, Text.class);
 
 		job.setMapperClass(MRMapper.class);
 		job.waitForCompletion(true);
-		assertTrue(MRCounterUtil.validCounterNum(job.getCounters(), dataProcess.getDataProcess()));
+		assertTrue(MRCounterUtil.validCounterNum(job.getCounters(), dataProcess.getDataProcess(),
+				HBaseClusterCache.getReportTable(), HBaseClusterCache.getSndKeyTable()));
 		System.out.println("there you see");
 		assertTrue(job.isSuccessful());
+
+		// fs.copyToLocalFile(new Path(output + "/part-m-00000"), new
+		// Path("/home/liuwu/tmp/out1"));
 
 	}
 

@@ -111,7 +111,7 @@ public class MRDataSchema {
 		for (int i = 0; i < basicSeg.getDataItems().size(); i++) {
 			DataItem item = basicSeg.getDataItems().get(i);
 			curValue = getCurValue(item, line); // 获取字段对应的值
-			if (i == 0) { // 第一个字段为记录长度
+			if (this.dataSchema.getReportType() == ReportTypeEnum.NORMAL && i == 0) { // 第一个字段为记录长度
 				len = Integer.parseInt(curValue);
 				if (len != line.length()) {
 					isValid = false;

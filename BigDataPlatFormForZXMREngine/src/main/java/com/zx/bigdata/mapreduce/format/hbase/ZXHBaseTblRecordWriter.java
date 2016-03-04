@@ -9,6 +9,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.BufferedMutator;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.Put;
@@ -27,7 +28,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
 import com.zx.bigdata.mapreduce.bean.ZXDBObjectKey;
-import com.zx.bigdata.mapreduce.test.model.HBaseClusterCache;
 import com.zx.bigdata.utils.MRUtils;
 
 public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable> {
@@ -48,7 +48,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 		TABLE_FAMILY = Bytes.toBytes(MRUtils.HBASE_TABLE_FAMILY);
 		TABLE_STATUS = Bytes.toBytes(MRUtils.HBASE_RECORD_STATUS_COL);
 		DELETE_STATUS = Bytes.toBytes(MRUtils.CONSTANT_DELETE_STATUS);
-		SND_VAL_COL = Bytes.toBytes("v");
+		SND_VAL_COL = Bytes.toBytes(MRUtils.HBASE_PROCESS_SNDINDEX_VAL_COL);
 
 	}
 
@@ -65,7 +65,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 	private boolean isDelStatus = false;
 
 	public ZXHBaseTblRecordWriter(Configuration conf, boolean wal_on) throws IOException {
-		LOG.debug("created new ZXHBaseTblRecordWriter with WAL " + (this.useWriteAheadLog ? "on" : "off"));
+		LOG.info("created new ZXHBaseTblRecordWriter with WAL " + (this.useWriteAheadLog ? "on" : "off"));
 		this.conf = conf;
 		this.useWriteAheadLog = wal_on;
 
@@ -79,8 +79,8 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 	BufferedMutator getBufferedMutator(byte[] tableName) throws Exception {
 		BufferedMutator result = null;
 		if (this.conn == null) {
-			conn = HBaseClusterCache.getHBaseUtility().getConnection(); // ConnectionFactory.createConnection(conf);
-			LOG.debug("create a hbase connection.");
+			conn = ConnectionFactory.createConnection(conf);
+			LOG.info("create a hbase connection.");
 		}
 		if (!this.mutatorMap.containsKey(tableName)) {
 			mutatorMap.put(tableName, conn.getBufferedMutator(TableName.valueOf(tableName)));
@@ -126,7 +126,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 			put.addColumn(TABLE_FAMILY, SND_VAL_COL, EMPTY_BYTE_ARR);
 			put.setDurability(this.useWriteAheadLog ? Durability.SYNC_WAL : Durability.SKIP_WAL);
 			this.sndKeyMutator.mutate(put);
-			LOG.info("二级索引写入：(key:" + Bytes.toString(put.getRow()) + ")");
+			LOG.debug("二级索引写入：(key:" + Bytes.toString(put.getRow()) + ")");
 
 			return;
 		}
@@ -134,6 +134,15 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 		if (this.reportMutator == null) {
 			try {
 				this.reportMutator = this.getBufferedMutator(TABLE_REPORT);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		if (this.sndKeyMutator == null) {
+			try {
+				this.sndKeyMutator = this.getBufferedMutator(TABLE_SND_KEY);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -159,7 +168,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 				byte[] sndRow = r.getRow();
 				Delete del = new Delete(sndRow);
 				this.sndKeyMutator.mutate(del); // 删除二级删除索引
-				LOG.info("物理删除二级删除索引：(key:" + Bytes.toString(del.getRow()) + ")");
+				LOG.debug("物理删除二级删除索引：(key:" + Bytes.toString(del.getRow()) + ")");
 
 				// 获取报文数据表中对应的rowkey
 				byte[] reportRow = Bytes.tail(sndRow, sndRow.length - row.length);
@@ -168,7 +177,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 				put.setDurability(this.useWriteAheadLog ? Durability.SYNC_WAL : Durability.SKIP_WAL);
 				put.addColumn(TABLE_FAMILY, TABLE_STATUS, DELETE_STATUS);
 				this.reportMutator.mutate(put);
-				LOG.info("逻辑删除正常报文：(key:" + Bytes.toString(put.getRow()) + ")");
+				LOG.debug("逻辑删除正常报文：(key:" + Bytes.toString(put.getRow()) + ")");
 
 				// 删除正反向二级索引
 				String strReportRow = Bytes.toString(reportRow);
@@ -179,11 +188,11 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 				scan.setFilter(new PrefixFilter(sndRow));
 				ResultScanner sndRs = this.sndKeyTable.getScanner(scan);
 				for (Result tr : sndRs) {
-					LOG.info("开始删除正反二级索引.");
+					LOG.debug("开始删除正反二级索引.");
 					byte[] reverseRow = tr.getRow();
 					del = new Delete(reverseRow);
 					this.sndKeyMutator.mutate(del);
-					LOG.info("物理删除二级索引：(key:" + Bytes.toString(del.getRow()) + ")");
+					LOG.debug("物理删除二级索引：(key:" + Bytes.toString(del.getRow()) + ")");
 
 					reverseRow = Bytes.tail(reverseRow, reverseRow.length - reportRow.length);
 					sndKeyBuilder = new StringBuilder(Bytes.toString(reverseRow));
@@ -192,7 +201,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 					reverseRow = Bytes.toBytes(sndKeyBuilder.toString());
 					del = new Delete(reverseRow);
 					this.sndKeyMutator.mutate(del);
-					LOG.info("物理删除二级删除索引：(key:" + Bytes.toString(del.getRow()) + ")");
+					LOG.debug("物理删除二级删除索引：(key:" + Bytes.toString(del.getRow()) + ")");
 
 				}
 				sndRs.close();
@@ -215,8 +224,8 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 			}
 		}
 		this.reportMutator.mutate(put);
-		LOG.info("正常报文入库：" + reportMutator.getName().getNameAsString() + "\t" + Bytes.toString(put.getRow()) + "\t"
-				+ put.toJSON());
+		LOG.debug("正常报文入库：" + reportMutator.getName().getNameAsString() + "\tvalue=" + Bytes.toString(put.getRow())
+				+ "\t" + put.toJSON());
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.zx.bigdata.bean.datadef.DataItem;
 import com.zx.bigdata.bean.datadef.DataSchema;
+import com.zx.bigdata.bean.datadef.ReportTypeEnum;
 import com.zx.bigdata.bean.datadef.Segment;
 import com.zx.bigdata.bean.processdef.ColumnObject;
 import com.zx.bigdata.bean.processdef.DBSchema;
@@ -21,8 +22,6 @@ public class TaxDataProcess {
 
 	private void init() {
 		this.dataProcess = new DataProcess();
-		this.initDBSchemas();
-		this.initSecondaryIndexes();
 	}
 
 	public TaxDataProcess(DataSchema dataSchema) {
@@ -30,6 +29,8 @@ public class TaxDataProcess {
 		this.dataProcess.setReportInformationType(dataSchema.getReportInformationType());
 		this.dataProcess.setReportType(dataSchema.getReportType());
 		this.dataProcess.setName("个人税务数据流程-" + this.dataProcess.getReportType().name());
+		this.initDBSchemas();
+		this.initSecondaryIndexes();
 	}
 
 	public DataProcess getDataProcess() {
@@ -139,23 +140,35 @@ public class TaxDataProcess {
 		// **** rowkey definition **start***********************
 		RowKeyObject rowKey = new RowKeyObject();
 		dbSchema.setRowKeyObject(rowKey);
-		// 唯一标识
-		List<SegmentDataItemPair> idCodes = rowKey.getIdCode();
-		idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "NAME"));
-		idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "CERTTYPE"));
-		idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "CERTNO"));
 
-		// 数据源区分段
-		rowKey.setReportInformationType(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
+		if (this.dataProcess.getReportType() == ReportTypeEnum.NORMAL) {
+			// 唯一标识
+			List<SegmentDataItemPair> idCodes = rowKey.getIdCode();
+			idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "NAME"));
+			idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "CERTTYPE"));
+			idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "CERTNO"));
 
-		// 业务类型区分段
-		rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "COURTCODE"));// 报送机构代码
-		rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxOrgCode"));// 主管税务机关代码
-		rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "TAXSYMBOL"));// 国税／地税标识
-		rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxPayerId"));// 纳税人识别号
+			// 数据源区分段
+			rowKey.setReportInformationType(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
 
-		// 税务报送统计时间
-		rowKey.setTime(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxReportTime"));
+			// 业务类型区分段
+			rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "COURTCODE"));// 报送机构代码
+			rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxOrgCode"));// 主管税务机关代码
+			rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "TAXSYMBOL"));// 国税／地税标识
+			rowKey.getBusiKeys().add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxPayerId"));// 纳税人识别号
+
+			// 税务报送统计时间
+			rowKey.setTime(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxReportTime"));
+		} else {
+			// 唯一标识
+			List<SegmentDataItemPair> idCodes = rowKey.getIdCode();
+			idCodes.add(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "COURTCODE"));
+			idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxOrgCode"));
+			idCodes.add(new SegmentDataItemPair(Segment.CONST_BASIC_KEY, "taxPayerId"));
+
+			// 数据源区分段
+			rowKey.setReportInformationType(new SegmentDataItemPair(Segment.CONST_HEADER_KEY, "LITIGATIONTYPE"));
+		}
 		// *****rowkey definition **end******************************
 
 		// ****rowkey columnObjects definition ** start************

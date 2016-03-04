@@ -27,7 +27,7 @@ import com.zx.bigdata.mapreduce.mapper.MRMapper;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataProcess;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataSchema;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxReportSegments;
-import com.zx.bigdata.utils.MRCounterUtil;
+import com.zx.bigdata.mapreduce.test.util.MRCounterUtil;
 
 public class TaxBasicSegmentTest {
 	ObjectMapper mapper;

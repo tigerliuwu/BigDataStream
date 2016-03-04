@@ -213,6 +213,10 @@ public class MRDataProcess {
 	public List<ZXDBObjectKey> calSNDKeyValues(RecordValueMap record) {
 		List<ZXDBObjectKey> results = new ArrayList<ZXDBObjectKey>();
 
+		if (this.dataProcess.getReportType() == ReportTypeEnum.DELETE) {
+			return results;
+		}
+
 		for (SecondaryIndex skey : this.dataProcess.getsKeys()) {
 			StringBuilder builder = new StringBuilder();
 			for (SegmentDataItemPair pair : skey.getKey()) {
