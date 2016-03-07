@@ -149,7 +149,8 @@ public class MRCounterUtil {
 		}
 
 		// rowkey条数 = 有效数据条数 ＊ 定义的rowkey数量
-		if (num_normal_rowkey != num_valid_record * num_def_rowkey) {
+		if (dataProcess.getReportType() == ReportTypeEnum.NORMAL
+				&& num_normal_rowkey != num_valid_record * num_def_rowkey) {
 			valid = false;
 			return valid;
 		}
@@ -162,7 +163,8 @@ public class MRCounterUtil {
 		}
 
 		// 正常二级索引条数 = rowkey条数 ＊ (定义的正常的二级索引数量 ＊ 2 + 定义的二级索引数量)
-		if (num_normal_skey != num_normal_rowkey * (num_skey_normal * 2 + num_skey_other)) {
+		if (dataProcess.getReportType() == ReportTypeEnum.NORMAL
+				&& num_normal_skey != num_normal_rowkey * (num_skey_normal * 2 + num_skey_other)) {
 			valid = false;
 			return valid;
 		}
@@ -198,7 +200,7 @@ public class MRCounterUtil {
 			preTotal = HBaseTableUtil.get(sndKeyTable);
 			curTotal = HBaseTableUtil.calculateTotalRecord(sndKeyTable);
 			val = preTotal - curTotal;
-			if (val < 0 || val != num_normal_skey * (num_skey_normal * 2 + num_skey_other)) {
+			if (val < 0 || val != num_def_rowkey * 3) {
 				valid = false;
 				return valid;
 			}

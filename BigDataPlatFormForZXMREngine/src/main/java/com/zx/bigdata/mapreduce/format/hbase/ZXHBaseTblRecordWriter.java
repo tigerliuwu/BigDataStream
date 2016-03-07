@@ -194,7 +194,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 					this.sndKeyMutator.mutate(del);
 					LOG.debug("物理删除二级索引：(key:" + Bytes.toString(del.getRow()) + ")");
 
-					reverseRow = Bytes.tail(reverseRow, reverseRow.length - reportRow.length);
+					reverseRow = Bytes.tail(reverseRow, reverseRow.length - sndRow.length);
 					sndKeyBuilder = new StringBuilder(Bytes.toString(reverseRow));
 					sndKeyBuilder.append(MRUtils.KEY_SPLIT_DEL);
 					sndKeyBuilder.append(strReportRow);

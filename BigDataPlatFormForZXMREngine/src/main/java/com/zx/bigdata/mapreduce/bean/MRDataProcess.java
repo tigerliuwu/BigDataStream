@@ -79,9 +79,6 @@ public class MRDataProcess {
 			}
 
 			// 业务类型区分段
-			if (rowKeyBuilder.length() > 0) {
-				rowKeyBuilder.append(MRUtils.KEY_SPLIT_DEL);
-			}
 			for (SegmentDataItemPair pair : rowKey.getBusiKeys()) {
 				if (rowKeyBuilder.length() > 0) {
 					rowKeyBuilder.append(MRUtils.KEY_SPLIT_DEL);
