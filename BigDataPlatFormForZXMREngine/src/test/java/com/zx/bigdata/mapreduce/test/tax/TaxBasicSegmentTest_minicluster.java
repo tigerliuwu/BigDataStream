@@ -51,7 +51,7 @@ public class TaxBasicSegmentTest_minicluster {
 		dataSchema = new TaxDataSchema(ReportTypeEnum.NORMAL);
 		dataSchema.setSegments(TaxReportSegments.getSegments());
 		dataProcess = new TaxDataProcess(dataSchema.getDataSchema());
-		HBaseClusterCache.startupMinicluster();
+		// HBaseClusterCache.startupMinicluster();
 		conf = HBaseClusterCache.getHBaseUtility().getConfiguration();
 	}
 
@@ -113,7 +113,7 @@ public class TaxBasicSegmentTest_minicluster {
 
 	@After
 	public void shutdown() {
-		HBaseClusterCache.shutdownMinicluster();
+		// HBaseClusterCache.shutdownMinicluster();
 	}
 
 }

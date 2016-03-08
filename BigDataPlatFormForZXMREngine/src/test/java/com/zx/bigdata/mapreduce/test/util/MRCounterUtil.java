@@ -200,7 +200,7 @@ public class MRCounterUtil {
 			preTotal = HBaseTableUtil.get(sndKeyTable);
 			curTotal = HBaseTableUtil.calculateTotalRecord(sndKeyTable);
 			val = preTotal - curTotal;
-			if (val < 0 || val != num_def_rowkey * 3) {
+			if (val < 0 || val != num_def_rowkey * num_delete_rowkey * (num_skey_normal * 2 + 1)) {
 				valid = false;
 				return valid;
 			}

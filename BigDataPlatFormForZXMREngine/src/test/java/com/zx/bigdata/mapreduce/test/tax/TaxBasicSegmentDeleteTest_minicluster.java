@@ -30,7 +30,6 @@ import com.zx.bigdata.mapreduce.test.model.HBaseClusterCache;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataProcess;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxDataSchema;
 import com.zx.bigdata.mapreduce.test.tax.bean.TaxReportDeleteSegment;
-import com.zx.bigdata.mapreduce.test.tax.bean.TaxReportSegments;
 import com.zx.bigdata.mapreduce.test.util.HBaseTableUtil;
 import com.zx.bigdata.mapreduce.test.util.MRCounterUtil;
 
@@ -50,70 +49,8 @@ public class TaxBasicSegmentDeleteTest_minicluster {
 	@Before
 	public void setup() throws Exception {
 		mapper = new ObjectMapper();
-		HBaseClusterCache.startupMinicluster();
+		// HBaseClusterCache.startupMinicluster();
 		conf = HBaseClusterCache.getHBaseUtility().getConfiguration();
-	}
-
-	/**
-	 * 源文件中只有基本信息段
-	 * 
-	 * @throws Exception
-	 */
-	public void testTaxBasicReport() throws Exception {
-
-		// init the path
-		final String input = "testData/tax/onlybasic/tax_with_only_basic";
-		final String output = "/tmp/tax/basicSeg";
-		FileUtil.fullyDelete(new File(output));
-
-		FileSystem fs = FileSystem.get(conf);
-		Path p = new Path("/user/tax/basic/");
-		fs.mkdirs(p);
-		fs.copyFromLocalFile(new Path(input), p);
-
-		if (!fs.exists(new Path("/user/tax/basic/tax_with_only_basic"))) {
-			System.err.println("=========failed to upload the local file===========");
-			return;
-		}
-
-		// conf.clear();
-		dataSchema = new TaxDataSchema(ReportTypeEnum.NORMAL);
-		dataSchema.setSegments(TaxReportSegments.getSegments());
-		dataProcess = new TaxDataProcess(dataSchema.getDataSchema());
-		String json = mapper.writeValueAsString(dataSchema.getDataSchema());
-		conf.set("org.zx.bigdata.dataschema", json);
-		json = mapper.writeValueAsString(dataProcess.getDataProcess());
-		conf.set("org.zx.bigdata.dataprocess", json);
-
-		Job job = Job.getInstance(conf, "WriteToHBase"); // new Job(conf,
-															// "wordcount");
-		job.setNumReduceTasks(0);
-		job.setOutputKeyClass(ZXDBObjectKey.class);
-		job.setOutputValueClass(Writable.class);
-
-		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(ZXMultiHBaseTblOutputFormat.class);
-		// job.setOutputFormatClass(ZXDBObjectRecordOutputFormat.class);
-
-		FileInputFormat.addInputPath(job, p);
-		FileOutputFormat.setOutputPath(job, new Path(output));
-
-		MultipleOutputs.addNamedOutput(job, "feedback", TextOutputFormat.class, NullWritable.class, Text.class);
-
-		job.setMapperClass(MRMapper.class);
-		job.waitForCompletion(true);
-		// assertTrue(MRCounterUtil.validCounterNum(job.getCounters(),
-		// dataProcess.getDataProcess()));
-
-		HBaseTableUtil.storeTotal4Table(HBaseClusterCache.getReportTable());
-		HBaseTableUtil.storeTotal4Table(HBaseClusterCache.getSndKeyTable());
-
-		System.out.println("there you see");
-		assertTrue(job.isSuccessful());
-
-		// fs.copyToLocalFile(new Path(output + "/part-m-00000"), new
-		// Path("/home/liuwu/tmp/out1"));
-
 	}
 
 	/**
@@ -124,7 +61,10 @@ public class TaxBasicSegmentDeleteTest_minicluster {
 	@Test
 	public void testTaxDeleteReport() throws Exception {
 
-		testTaxBasicReport();
+		// testTaxBasicReport();
+
+		HBaseTableUtil.storeTotal4Table(HBaseClusterCache.getReportTable());
+		HBaseTableUtil.storeTotal4Table(HBaseClusterCache.getSndKeyTable());
 
 		// init the path
 		final String input = "testData/tax/onlybasicdelete/tax_with_only_basic";
@@ -183,7 +123,7 @@ public class TaxBasicSegmentDeleteTest_minicluster {
 
 	@After
 	public void shutdown() {
-		HBaseClusterCache.shutdownMinicluster();
+		// HBaseClusterCache.shutdownMinicluster();
 	}
 
 }

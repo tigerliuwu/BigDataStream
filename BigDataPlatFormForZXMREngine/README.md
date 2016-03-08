@@ -13,6 +13,19 @@
 目前只用了mapper，使用counter进行输入数据和输出数据的统计。<br>
 
 ##测试
+### 使用的测试工具
+1. 使用hbase-testing-util在本地模拟一个hbase,hdfs,zookeeper集群
+package:com.zx.bigdata.mapreduce.test.tax 下所有的以_minicluster结尾的junit测试单元都是基于该工具进行测试的。
+
+2. mrunit
+这种方法有很到的局限性，无法使用本地文件作为数据源
+
+### 测试说明
+1. MapReduceTestSuite.java 是测试的入口，所有的junit测试单元都在该类进行注册和运行。
+2. MapReduceTestSuiteSetup.java 用于启动一个hadoop 集群（本地模拟集群）
+3. MapReduceTestSuiteClearup.java 用于关闭上述启动的集群。
+
+### hbase-testing-util测试工具的参考资料
 hbase<br>
 refer to: <br>
 * http://blog.csdn.net/ebay/article/details/43528941<br>
