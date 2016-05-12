@@ -64,8 +64,8 @@ public class TaxBasicSegmentTest {
 		json = mapper.writeValueAsString(dataProcess.getDataProcess());
 		conf.set("org.zx.bigdata.dataprocess", json);
 
-		Job job = Job.getInstance(conf, "word count"); // new Job(conf,
-														// "wordcount");
+		Job job = Job.getInstance(conf, "Tax Basic files"); // new Job(conf,
+		// "wordcount");
 		job.setNumReduceTasks(0);
 		job.setOutputKeyClass(ZXDBObjectKey.class);
 		job.setOutputValueClass(Writable.class);

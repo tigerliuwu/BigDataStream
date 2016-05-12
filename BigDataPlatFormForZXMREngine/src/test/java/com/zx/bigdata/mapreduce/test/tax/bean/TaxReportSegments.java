@@ -73,7 +73,7 @@ public class TaxReportSegments {
 		rul.getParams().add("YYYYMMDDHHMMSS");
 		item.getRules().add(rul);
 		segment.getDataItems().add(item);
-		// 报文类别
+		// 信息类别
 		item = new DataItem();
 		item.setName("LITIGATIONTYPE");
 		item.setDataItemType(DataItemTypeEnum.AN);
@@ -291,14 +291,6 @@ public class TaxReportSegments {
 		item.setDataItemType(DataItemTypeEnum.N);
 		item.setStartPose(451);
 		item.setEndPose(465);
-		segment.getDataItems().add(item);
-
-		// 纳税状态
-		item = new DataItem();
-		item.setName("taxStatus");
-		item.setDataItemType(DataItemTypeEnum.N);
-		item.setStartPose(466);
-		item.setEndPose(466);
 		segment.getDataItems().add(item);
 
 		// 纳税状态

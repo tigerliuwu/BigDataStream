@@ -24,6 +24,8 @@ import com.csvreader.CsvWriter;
 import com.zx.bigdata.bean.datadef.DataSchema;
 import com.zx.bigdata.bean.datadef.ReportTypeEnum;
 import com.zx.bigdata.bean.datadef.SourceFileTypeEnum;
+import com.zx.bigdata.bean.datadef.validate.dict.DictCache;
+import com.zx.bigdata.bean.feedback.ZXValidatorFeedBack;
 import com.zx.bigdata.bean.processdef.DataProcess;
 import com.zx.bigdata.mapreduce.bean.MRCounterMap;
 import com.zx.bigdata.mapreduce.bean.MRDataProcess;
@@ -73,6 +75,10 @@ public class MRMapper extends Mapper<LongWritable, Text, ZXDBObjectKey, Writable
 			mrDataSchema.calHeadValues(headLine);
 
 			mos = new MultipleOutputs<ZXDBObjectKey, Writable>(context);
+
+			// 获取数据字典
+			DictCache.buildDict("");
+
 			LOG.info("init succesfully");
 
 		} catch (IOException e) {
@@ -103,7 +109,8 @@ public class MRMapper extends Mapper<LongWritable, Text, ZXDBObjectKey, Writable
 		 * <p>
 		 * 3.对信息段出现次数进行校验
 		 */
-		boolean isExpected = mrDataSchema.validDataSchema(line);
+		ZXValidatorFeedBack feedback = new ZXValidatorFeedBack();
+		boolean isExpected = mrDataSchema.validDataSchema(line, feedback);
 
 		if (isExpected) { // 合法数据
 			context.getCounter(StatusCounterEnum.NUM_VALID_RECORD).increment(1);

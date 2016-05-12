@@ -3,11 +3,47 @@
   <groupId>org.wlu</groupId>
   <artifactId>org.wlu.spark</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-    <dependencies>
-    <dependency> <!-- Spark dependency -->
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_2.10</artifactId>
-      <version>1.4.0</version>
-    </dependency>
+  
+  <properties>
+  	<spark.version>1.6.1</spark.version>
+  	<hbase.version>1.2.1</hbase.version>
+  </properties>
+  
+ <dependencies>
+    <dependency>
+	    <groupId>org.apache.spark</groupId>
+	    <artifactId>spark-core_2.10</artifactId>
+	    <version>${spark.version}</version>
+	</dependency>
+	
+	  	<!-- Hbase -->
+  	<dependency>
+  		<groupId>org.apache.hbase</groupId>
+  		<artifactId>hbase-client</artifactId>
+		<version>${hbase.version}</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.apache.hbase</groupId>
+  		<artifactId>hbase-server</artifactId>
+		<version>${hbase.version}</version>
+  	</dependency>
+  	
+  	<!-- for hbase minicluster testing -->
+  	<dependency>
+  		<groupId>org.apache.hbase</groupId>
+  		<artifactId>hbase-testing-util</artifactId>
+		<version>${hbase.version}</version>
+		<scope>provided</scope>
+  	</dependency>
+  	
+  	<!-- junit4 -->
+  		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	
   </dependencies>
 </project>

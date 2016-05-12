@@ -52,7 +52,7 @@ public class MRDataProcess {
 	 * @param key
 	 * @return
 	 */
-	public StringBuilder calRowKey(RecordValueMap record, RowKeyObject key) {
+	public StringBuilder calRowKey(ReportRecord record, RowKeyObject key) {
 		// 跟该二级索引关联的rowkey
 		StringBuilder rowKeyBuilder = new StringBuilder();
 		RowKeyObject rowKey = key;
@@ -107,7 +107,7 @@ public class MRDataProcess {
 	 * @throws JsonMappingException
 	 * @throws JsonGenerationException
 	 */
-	private String calDBColumnObjectValue(RecordValueMap record, ColumnObject colObj)
+	private String calDBColumnObjectValue(ReportRecord record, ColumnObject colObj)
 			throws ZXBigDataException, JsonGenerationException, JsonMappingException, IOException {
 
 		String result = null;
@@ -177,7 +177,7 @@ public class MRDataProcess {
 	 * @throws JsonMappingException
 	 * @throws JsonGenerationException
 	 */
-	public Map<ZXDBObjectKey, Writable> calRowKeyValues(RecordValueMap record)
+	public Map<ZXDBObjectKey, Writable> calRowKeyValues(ReportRecord record)
 			throws JsonGenerationException, JsonMappingException, ZXBigDataException, IOException {
 		Map<ZXDBObjectKey, Writable> results = new HashMap<ZXDBObjectKey, Writable>();
 
@@ -207,7 +207,7 @@ public class MRDataProcess {
 	 * @param record
 	 * @return
 	 */
-	public List<ZXDBObjectKey> calSNDKeyValues(RecordValueMap record) {
+	public List<ZXDBObjectKey> calSNDKeyValues(ReportRecord record) {
 		List<ZXDBObjectKey> results = new ArrayList<ZXDBObjectKey>();
 
 		if (this.dataProcess.getReportType() == ReportTypeEnum.DELETE) {
