@@ -28,6 +28,12 @@
   		<artifactId>hbase-server</artifactId>
 		<version>${hbase.version}</version>
   	</dependency>
+  	<!-- 
+  	<dependency>
+  	  <groupId>org.wliu.zx</groupId>
+	  <artifactId>BigDataPlatFormForZXMREngine</artifactId>
+	  <version>0.0.1-SNAPSHOT</version>
+  	</dependency> -->
   	
   	<!-- for hbase minicluster testing -->
   	<dependency>
