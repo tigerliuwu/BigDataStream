@@ -1,20 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.wlu</groupId>
-  <artifactId>org.wlu.spark</artifactId>
+  <groupId>org.wliu</groupId>
+  <artifactId>org.wliu.spark</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   
   <properties>
   	<spark.version>1.6.1</spark.version>
   	<hbase.version>1.2.1</hbase.version>
+  	<scala.binary.version>2.10</scala.binary.version>
   </properties>
   
  <dependencies>
     <dependency>
 	    <groupId>org.apache.spark</groupId>
-	    <artifactId>spark-core_2.10</artifactId>
+	    <artifactId>spark-core_${scala.binary.version}</artifactId>
 	    <version>${spark.version}</version>
 	</dependency>
+		
+	<dependency>
+		<groupId>org.apache.spark</groupId>
+		<artifactId>spark-streaming_${scala.binary.version}</artifactId>
+		<version>${spark.version}</version>	
+	</dependency>
+	
+	
 	
 	  	<!-- Hbase -->
   	<dependency>
@@ -50,6 +59,31 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+	
+	<!-- others -->
+	<dependency>
+    <groupId>org.dom4j</groupId>
+    <artifactId>dom4j</artifactId>
+    <version>2.0.0</version>
+</dependency>
+
+
+	<!-- system -->
+	<dependency>
+		<groupId>org.talend</groupId>
+		<artifactId>talend_file_enhanced_20070724</artifactId>
+		<version>1.0</version>
+		<scope>system</scope>
+		<systemPath>${project.basedir}/libs/talend_file_enhanced_20070724.jar</systemPath>
+	</dependency>
+	
+		<dependency>
+		<groupId>org.talend</groupId>
+		<artifactId>talend-mapred-lib</artifactId>
+		<version>1.0</version>
+		<scope>system</scope>
+		<systemPath>${project.basedir}/libs/talend-mapred-lib.jar</systemPath>
+	</dependency>
 	
   </dependencies>
 </project>
