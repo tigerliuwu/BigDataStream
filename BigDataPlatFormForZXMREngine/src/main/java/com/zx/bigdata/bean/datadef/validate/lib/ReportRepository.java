@@ -6,18 +6,18 @@ import java.util.Map;
 import com.zx.bigdata.bean.datadef.validate.AppSysCodeEnum;
 import com.zx.bigdata.bean.datadef.validate.inter.IZXValidator;
 
-public class ReportValidatorRepository {
+public class ReportRepository {
 
-	private static Map<AppSysCodeEnum, IZXValidator> cache = new HashMap<AppSysCodeEnum, IZXValidator>();
+	private static Map<AppSysCodeEnum, IZXValidator> valLib_cache = new HashMap<AppSysCodeEnum, IZXValidator>();
 
-	private ReportValidatorRepository() {
+	private ReportRepository() {
 
 	}
 
-	public static IZXValidator get(String appSysCode) {
+	public static IZXValidator getValidatorLib(String appSysCode) {
 		AppSysCodeEnum appSysCodeEnum = AppSysCodeEnum.fromString(appSysCode);
 
-		IZXValidator validator = cache.get(appSysCodeEnum);
+		IZXValidator validator = valLib_cache.get(appSysCodeEnum);
 		if (validator != null) {
 			return validator;
 		}
@@ -25,11 +25,14 @@ public class ReportValidatorRepository {
 		case APP_NONBANK_PERSONAL:
 			validator = new EPersonalValidatorLib();
 			break;
+		case APP_NONBANK_CORP:
+			// TODO
+
 		default:
 			throw new RuntimeException("未知应用系统代码");
 		}
 
-		cache.put(appSysCodeEnum, validator);
+		valLib_cache.put(appSysCodeEnum, validator);
 
 		return validator;
 

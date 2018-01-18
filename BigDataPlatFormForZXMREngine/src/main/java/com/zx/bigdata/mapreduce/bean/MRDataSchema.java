@@ -18,7 +18,7 @@ import com.zx.bigdata.bean.datadef.rules.RulesExecutor;
 import com.zx.bigdata.bean.datadef.rules.ZXValidatorPrototype;
 import com.zx.bigdata.bean.datadef.validate.AppSysCodeEnum;
 import com.zx.bigdata.bean.datadef.validate.inter.IZXValidator;
-import com.zx.bigdata.bean.datadef.validate.lib.ReportValidatorRepository;
+import com.zx.bigdata.bean.datadef.validate.lib.ReportRepository;
 import com.zx.bigdata.bean.feedback.ZXValidatorFeedBack;
 
 /**
@@ -109,7 +109,8 @@ public class MRDataSchema {
 		// ****************获取基本信息段 开始*****************************
 		Segment basicSeg = dataSchema.getSegments().get(Segment.CONST_BASIC_KEY);
 		if (basicSeg == null) { // 如果基本信息段为空，数据模型为非法数据模型。
-			throw new IOException("数据模型:\"" + dataSchema.getName() + "\"缺失基本信息段！");
+			String segKey = line.substring(0, 1);
+			basicSeg = dataSchema.getSegments().get(segKey);
 		}
 
 		segMap = new HashMap<String, String>();
@@ -188,8 +189,8 @@ public class MRDataSchema {
 		// ＊＊＊＊＊＊＊＊＊＊＊业务逻辑校验--开始＊＊＊＊＊＊＊＊＊＊＊
 
 		// 非银行类个人报文
-		IZXValidator validatorFactory = ReportValidatorRepository
-				.get(AppSysCodeEnum.APP_NONBANK_PERSONAL.getAppSysCode());
+		IZXValidator validatorFactory = ReportRepository
+				.getValidatorLib(AppSysCodeEnum.APP_NONBANK_PERSONAL.getAppSysCode());
 		ZXValidatorPrototype validator = validatorFactory.getValidator(this.recordVal.getReportInfoType());
 		if (!feedback.isFull()) {
 			validator.validateRecord(this.recordVal, feedback);

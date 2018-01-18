@@ -163,6 +163,7 @@ public class ZXHBaseTblRecordWriter extends RecordWriter<ZXDBObjectKey, Writable
 			row = Bytes.toBytes(sndKeyBuilder.toString());
 			Filter filter1 = new PrefixFilter(row);
 			scan.setFilter(filter1);
+
 			ResultScanner rs = this.sndKeyTable.getScanner(scan);
 			for (Result r : rs) {
 				byte[] sndRow = r.getRow();
